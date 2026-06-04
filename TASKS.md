@@ -33,8 +33,10 @@ search + event ingest all working against Supabase. Next up: CRO API access, the
 ## Phase 2 — Monetization
 | # | Task | Owner | Status |
 |---|------|-------|--------|
-| 2.1 | Nightly rollup → analytics_daily (per surface) | — | TODO |
-| 2.2 | Paid analytics dashboard + Stripe | — | TODO |
+| 2.1 | Nightly rollup → analytics_daily (per surface) | — | DONE (`db/rollup.mjs`; verified vs raw counts) |
+| 2.2 | Analytics API (dashboard data, web-vs-app) | — | DONE (`/api/analytics/:id`; verified) |
+| 2.3 | Stripe billing + subscription gate | — | TODO (needs Stripe keys) |
+| 2.4 | Dashboard UI (web) consuming /api/analytics | — | TODO |
 
 ## Notes / decisions
 - Working repo name `bizfinder-ie` — rename when brand is chosen.
