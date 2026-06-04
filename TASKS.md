@@ -24,10 +24,10 @@ search + event ingest all working against Supabase. Next up: CRO API access, the
 ## Phase 1 — Directory (web + app)
 | # | Task | Owner | Status |
 |---|------|-------|--------|
-| 1.1 | Next.js SSR listing pages + schema.org + sitemaps | — | TODO |
-| 1.2 | Expo app — search + listing + tap-to-call | — | TODO |
-| 1.3 | Search: name/category/location/reverse-phone | — | TODO |
-| 1.4 | Analytics events (both surfaces) → listing_events | — | TODO |
+| 1.1 | Next.js SSR listing pages + schema.org + sitemaps | — | DONE (verified: SSR HTML + JSON-LD + 150-url sitemap) |
+| 1.2 | Expo app — search + listing + tap-to-call | — | WIP |
+| 1.3 | Search: name/category/location/reverse-phone | — | DONE (API + web; app pending) |
+| 1.4 | Analytics events (both surfaces) → listing_events | — | DONE web (beacon/call/dwell); app pending |
 | 1.5 | Claim-listing flow + takedown endpoint | — | TODO |
 
 ## Phase 2 — Monetization

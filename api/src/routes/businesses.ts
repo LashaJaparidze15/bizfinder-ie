@@ -3,6 +3,15 @@ import type { BusinessListing } from "@bizfinder/shared";
 
 // Single business by slug (the canonical listing-page payload for web + app).
 export async function businessRoutes(app: FastifyInstance) {
+  // Lightweight slug list for the web sitemap.
+  app.get("/api/slugs", async (_req, reply) => {
+    if (!app.db) return reply.code(503).send({ error: "database not configured" });
+    const { rows } = await app.db.query(
+      `select slug, updated_at from businesses order by id limit 50000`,
+    );
+    return rows.map((r) => ({ slug: r.slug, updatedAt: r.updated_at }));
+  });
+
   app.get<{ Params: { slug: string } }>("/api/businesses/:slug", async (req, reply) => {
     if (!app.db) return reply.code(503).send({ error: "database not configured" });
 
