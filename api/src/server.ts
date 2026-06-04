@@ -1,4 +1,9 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+// Load the repo-root .env regardless of cwd (workspace scripts run from api/).
+dotenv.config({ path: join(dirname(fileURLToPath(import.meta.url)), "../../.env") });
+
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { registerDb } from "./plugins/db.js";

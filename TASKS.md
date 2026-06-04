@@ -11,12 +11,15 @@
 | 0.1 | Init monorepo structure + root config | — | DONE |
 | 0.2 | Coordination files (CLAUDE.md, PLAN.md, TASKS.md) | — | DONE |
 | 0.3 | DB schema migration (extensions + tables + indexes) | — | DONE |
-| 0.4 | Supabase project + run migrations | — | TODO (needs user) |
+| 0.4 | Supabase project + run migrations | — | DONE (eu-west-1; 11 tables + 3 extensions verified) |
 | 0.5 | `packages/shared` — types + zod + API client | — | DONE |
 | 0.6 | `api/` skeleton — health + DB conn + search stub | — | DONE (boots; verified /health + 503 fallback) |
 | 0.7 | OSM Overpass scraper (one county) → business_sources | — | DONE (verified live: 30 Galway POIs in dry-run) |
 | 0.8 | CRO ingest stub → business_sources | — | STUB (needs CRO API key from services.cro.ie) |
-| 0.9 | Entity-resolution v1 (merge sources → businesses) | — | TODO (blocked on Supabase) |
+| 0.9 | Entity-resolution v1 (merge sources → businesses) | — | DONE (`resolve.py`; 300 rows→150 biz, dedup verified idempotent) |
+
+**Phase 0 COMPLETE & verified** (2026-06-04): 150 Galway businesses live; API name/geo/reverse-phone
+search + event ingest all working against Supabase. Next up: CRO API access, then Phase 1.
 
 ## Phase 1 — Directory (web + app)
 | # | Task | Owner | Status |
