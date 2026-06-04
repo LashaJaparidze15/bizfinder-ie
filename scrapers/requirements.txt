@@ -1,0 +1,4 @@
+requests>=2.32
+psycopg[binary]>=3.2
+phonenumbers>=8.13
+python-dotenv>=1.0

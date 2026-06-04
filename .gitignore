@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.pnp/
+.venv/
+__pycache__/
+*.pyc
+
+# Builds
+dist/
+build/
+.next/
+out/
+.expo/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Scraper output / dumps
+scrapers/.cache/
+*.dump
