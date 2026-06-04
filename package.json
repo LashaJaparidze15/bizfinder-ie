@@ -12,6 +12,9 @@
   "engines": {
     "node": ">=20"
   },
+  "overrides": {
+    "react-native": "0.74.5"
+  },
   "scripts": {
     "api": "npm run dev --workspace api",
     "web": "npm run dev --workspace web",

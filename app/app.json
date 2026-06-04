@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "bizfinder",
+    "slug": "bizfinder-ie",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "scheme": "bizfinderie",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": { "supportsTablet": true, "bundleIdentifier": "ie.bizfinder.app" },
+    "android": { "package": "ie.bizfinder.app" },
+    "plugins": ["expo-router"],
+    "extra": {
+      "apiUrl": "http://localhost:4000"
+    }
+  }
+}

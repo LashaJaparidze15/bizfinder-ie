@@ -11,6 +11,7 @@ import { healthRoutes } from "./routes/health.js";
 import { searchRoutes } from "./routes/search.js";
 import { businessRoutes } from "./routes/businesses.js";
 import { eventRoutes } from "./routes/events.js";
+import { claimRoutes } from "./routes/claims.js";
 
 async function main() {
   const app = Fastify({ logger: true, trustProxy: true });
@@ -22,6 +23,7 @@ async function main() {
   await app.register(searchRoutes);
   await app.register(businessRoutes);
   await app.register(eventRoutes);
+  await app.register(claimRoutes);
 
   const port = Number(process.env.API_PORT ?? 4000);
   await app.listen({ port, host: "0.0.0.0" });

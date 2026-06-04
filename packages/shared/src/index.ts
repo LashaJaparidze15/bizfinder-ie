@@ -74,6 +74,25 @@ export const eventInputSchema = z.object({
 });
 export type EventInput = z.infer<typeof eventInputSchema>;
 
+// Claim a listing (business owner). Creates/links an account by email.
+export const claimInputSchema = z.object({
+  businessId: z.number().int().positive(),
+  email: z.string().email(),
+});
+export type ClaimInput = z.infer<typeof claimInputSchema>;
+
+// GDPR objection / takedown — against a business or a specific phone number.
+export const takedownInputSchema = z
+  .object({
+    businessId: z.number().int().positive().optional(),
+    phoneNumberId: z.number().int().positive().optional(),
+    reason: z.string().max(1000).optional(),
+  })
+  .refine((v) => v.businessId || v.phoneNumberId, {
+    message: "Provide businessId or phoneNumberId.",
+  });
+export type TakedownInput = z.infer<typeof takedownInputSchema>;
+
 // ---------------------------------------------------------------------------
 // Typed API client (used by web + app). Inject fetch + baseUrl.
 // ---------------------------------------------------------------------------
