@@ -147,6 +147,22 @@ export function createApiClient({ baseUrl, fetch: f = fetch }: ApiClientOptions)
       return (await res.json()) as AnalyticsResponse;
     },
 
+    async getBillingStatus(businessId: number): Promise<{ active: boolean; billingEnabled: boolean }> {
+      const res = await f(url(`/api/billing/status?businessId=${businessId}`));
+      if (!res.ok) throw new Error(`getBillingStatus failed: ${res.status}`);
+      return (await res.json()) as { active: boolean; billingEnabled: boolean };
+    },
+
+    async createCheckout(input: { businessId: number; email: string }): Promise<{ url: string | null }> {
+      const res = await f(url(`/api/billing/checkout`), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) throw new Error(`createCheckout failed: ${res.status}`);
+      return (await res.json()) as { url: string | null };
+    },
+
     // Fire-and-forget; never block UI on analytics.
     async trackEvent(event: EventInput): Promise<void> {
       try {

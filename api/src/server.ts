@@ -13,11 +13,24 @@ import { businessRoutes } from "./routes/businesses.js";
 import { eventRoutes } from "./routes/events.js";
 import { claimRoutes } from "./routes/claims.js";
 import { analyticsRoutes } from "./routes/analytics.js";
+import { billingRoutes } from "./routes/billing.js";
 
 async function main() {
   const app = Fastify({ logger: true, trustProxy: true });
 
   await app.register(cors, { origin: true });
+
+  // Parse JSON but also keep the raw buffer on req.rawBody — Stripe webhook
+  // signature verification needs the exact bytes.
+  app.addContentTypeParser("application/json", { parseAs: "buffer" }, (req, body, done) => {
+    (req as typeof req & { rawBody?: Buffer }).rawBody = body as Buffer;
+    try {
+      done(null, (body as Buffer).length ? JSON.parse(body.toString()) : {});
+    } catch (err) {
+      done(err as Error);
+    }
+  });
+
   await registerDb(app);
 
   await app.register(healthRoutes);
@@ -26,6 +39,7 @@ async function main() {
   await app.register(eventRoutes);
   await app.register(claimRoutes);
   await app.register(analyticsRoutes);
+  await app.register(billingRoutes);
 
   const port = Number(process.env.API_PORT ?? 4000);
   await app.listen({ port, host: "0.0.0.0" });

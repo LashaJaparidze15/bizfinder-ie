@@ -1,7 +1,10 @@
 import type { FastifyInstance } from "fastify";
+import { billingEnabled } from "../lib/stripe.js";
+import { hasActiveSubscription } from "./billing.js";
 
 // Dashboard data for a business: totals + per-surface (web vs app) breakdown +
-// daily series, from the analytics_daily rollup. (Stripe access gate: TODO when keys exist.)
+// daily series, from the analytics_daily rollup. Gated behind an active
+// subscription once billing is configured (open in dev until then).
 export async function analyticsRoutes(app: FastifyInstance) {
   app.get<{ Params: { businessId: string }; Querystring: { days?: string } }>(
     "/api/analytics/:businessId",
@@ -13,6 +16,11 @@ export async function analyticsRoutes(app: FastifyInstance) {
         return reply.code(400).send({ error: "invalid businessId" });
       }
       const days = Math.min(Math.max(Number(req.query.days ?? 30), 1), 365);
+
+      // Paywall: enforced only once Stripe is configured.
+      if (billingEnabled() && !(await hasActiveSubscription(app, businessId))) {
+        return reply.code(402).send({ error: "subscription required", businessId });
+      }
 
       const { rows } = await app.db.query(
         `select date, surface, impressions, clicks, calls, avg_dwell_ms

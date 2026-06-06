@@ -1,5 +1,6 @@
 import type { AnalyticsResponse } from "@bizfinder/shared";
 import { api } from "@/lib/api";
+import { SubscribeButton } from "@/components/SubscribeButton";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,27 @@ function SurfaceRow({ name, counts, max }: { name: string; counts: { impressions
 
 export default async function DashboardPage({ params }: { params: { businessId: string } }) {
   const businessId = Number(params.businessId);
+
+  // Paywall: if billing is live and this owner hasn't subscribed, show the CTA.
+  const billing = await api
+    .getBillingStatus(businessId)
+    .catch(() => ({ active: false, billingEnabled: false }));
+  if (billing.billingEnabled && !billing.active) {
+    return (
+      <main className="container">
+        <h1>Listing analytics</h1>
+        <div className="card" style={{ background: "#fffbe6", borderColor: "#f5e08c" }}>
+          <strong>Unlock your analytics</strong>
+          <p className="muted">
+            See impressions, click-throughs, calls generated, and the web-vs-app split for your
+            listing. Subscribe to get full access.
+          </p>
+          <SubscribeButton businessId={businessId} />
+        </div>
+      </main>
+    );
+  }
+
   let data: AnalyticsResponse | null = null;
   let error: string | null = null;
   try {
@@ -74,8 +96,8 @@ export default async function DashboardPage({ params }: { params: { businessId: 
       <div className="card" style={{ background: "#f3faf6", borderColor: "#bfe6d2" }}>
         <strong>This is the paid view.</strong>{" "}
         <span className="muted">
-          Subscription gating (Stripe) attaches here once billing is wired — only the claimed owner
-          with an active plan will see this page.
+          Subscription gating is wired: once Stripe keys are set, only a claimed owner with an
+          active plan reaches this data — others get the subscribe screen.
         </span>
       </div>
     </main>
