@@ -142,13 +142,14 @@ export function createApiClient({ baseUrl, fetch: f = fetch }: ApiClientOptions)
     },
 
     async getAnalytics(businessId: number, days = 30): Promise<AnalyticsResponse> {
-      const res = await f(url(`/api/analytics/${businessId}?days=${days}`));
+      // Personal + real-time — never cache (Next would otherwise serve stale data).
+      const res = await f(url(`/api/analytics/${businessId}?days=${days}`), { cache: "no-store" } as RequestInit);
       if (!res.ok) throw new Error(`getAnalytics failed: ${res.status}`);
       return (await res.json()) as AnalyticsResponse;
     },
 
     async getBillingStatus(businessId: number): Promise<{ active: boolean; billingEnabled: boolean }> {
-      const res = await f(url(`/api/billing/status?businessId=${businessId}`));
+      const res = await f(url(`/api/billing/status?businessId=${businessId}`), { cache: "no-store" } as RequestInit);
       if (!res.ok) throw new Error(`getBillingStatus failed: ${res.status}`);
       return (await res.json()) as { active: boolean; billingEnabled: boolean };
     },

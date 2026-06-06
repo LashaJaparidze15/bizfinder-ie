@@ -31,3 +31,6 @@ Thumbs.db
 # Scraper output / dumps
 scrapers/.cache/
 *.dump
+
+# Agent skills (symlinks; each dev runs `npx skills add` locally)
+.agents/

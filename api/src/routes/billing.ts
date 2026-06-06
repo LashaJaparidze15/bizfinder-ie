@@ -42,6 +42,15 @@ export async function billingRoutes(app: FastifyInstance) {
     );
     const accountId = account.rows[0].id;
 
+    // Subscribing to a listing's analytics ties this account to the business
+    // (so the post-payment subscription actually unlocks its dashboard).
+    await app.db.query(
+      `insert into claims (business_id, account_id)
+       select $1, $2
+       where not exists (select 1 from claims where business_id = $1 and account_id = $2)`,
+      [businessId, accountId],
+    );
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: STRIPE_PRICE_ID!, quantity: 1 }],
