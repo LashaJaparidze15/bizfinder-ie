@@ -4,26 +4,25 @@ Search + listing + tap-to-call, sharing the `@bizfinder/shared` API client with 
 Analytics events are tagged `surface = ios | android`; tap-to-call fires a `call` event.
 
 ## Status
-- **Code complete and typechecks** (`npm run typecheck -w @bizfinder/app`).
-- **Known setup issue:** a clean Metro bundle currently fails because **npm workspaces** hoisting
-  misplaces some Expo transitive deps (`schema-utils`, `@react-navigation/core`, …). This is a
-  tooling/monorepo issue, not an app-code bug — the bundler gets through Babel, expo-router, and
-  the RN-version checks before hitting these.
+- **Working** — typechecks (`npm run typecheck`) and bundles cleanly via Metro (`npx expo export`).
+- **Isolated install** (Option B): the app is intentionally NOT a root workspace member. It has its
+  own `node_modules` so Expo's transitive deps resolve correctly (npm-workspaces hoisting otherwise
+  misplaces them). `@bizfinder/shared` is wired in three ways: a `file:../packages/shared` dependency,
+  a Metro `watchFolder` + `extraNodeModules` alias (see `metro.config.js`), and shared's runtime dep
+  (`zod`) listed directly here.
 
-## Recommended fix (pick one), then `npx expo start`
-1. **Switch the monorepo to pnpm or yarn** — both handle Expo monorepos far better than npm
-   workspaces (npm's flat hoisting is the root cause). Lowest long-term friction.
-2. **Isolate the app's install** — remove `app` from the root `workspaces` array, add
-   `@bizfinder/shared` as a `file:../packages/shared` dependency, and run `npm install` *inside*
-   `app/` so all Expo deps live in `app/node_modules` where Metro expects them. The existing
-   `metro.config.js` already adds the workspace root to `watchFolders`.
-3. **Let Expo align everything:** in `app/`, run `npx expo install --fix` then `npx expo-doctor`
-   and install whatever it reports missing.
-
-## Run (once the above is done)
+## Install (run inside `app/`, not from the repo root)
 ```bash
 cd app
-npx expo start          # then press i / a, or scan the QR with Expo Go
+npm install
 ```
-On a physical device, set `expo.extra.apiUrl` in `app.json` to your machine's LAN IP
-(e.g. `http://192.168.1.20:4000`) — `localhost` won't reach the API from the phone.
+
+## Run
+```bash
+cd app
+npx expo start          # press i / a for a simulator, or scan the QR with Expo Go
+```
+`expo.extra.apiUrl` in `app.json` points at the PC's LAN IP (currently `http://172.20.10.4:4000`)
+so a physical phone can reach the API — `localhost` won't work from the device. Update it if your
+IP changes (`ipconfig`), and make sure the API allows inbound connections on port 4000 (Windows
+Firewall may prompt the first time).

@@ -6,14 +6,10 @@
   "workspaces": [
     "packages/*",
     "api",
-    "web",
-    "app"
+    "web"
   ],
   "engines": {
     "node": ">=20"
-  },
-  "overrides": {
-    "react-native": "0.74.5"
   },
   "scripts": {
     "api": "npm run dev --workspace api",

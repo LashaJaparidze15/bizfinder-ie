@@ -8,10 +8,12 @@ const workspaceRoot = path.resolve(projectRoot, "..");
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [workspaceRoot];
-config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules"),
-];
+// App is isolated (not a workspace), but @bizfinder/shared lives outside app/.
+// Watch it so Metro transpiles its TS, and alias the import to its real path.
+config.watchFolders = [path.resolve(workspaceRoot, "packages/shared")];
+config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];
+config.resolver.extraNodeModules = {
+  "@bizfinder/shared": path.resolve(workspaceRoot, "packages/shared"),
+};
 
 module.exports = config;
