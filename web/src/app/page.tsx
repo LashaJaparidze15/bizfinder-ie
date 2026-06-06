@@ -1,4 +1,11 @@
-export default function HomePage() {
+import Link from "next/link";
+import { api } from "@/lib/api";
+
+export const revalidate = 3600;
+
+export default async function HomePage() {
+  const counties = await api.getCounties().catch(() => []);
+
   return (
     <main className="container">
       <h1>Find any Irish business</h1>
@@ -14,6 +21,19 @@ export default function HomePage() {
         <input name="phone" placeholder="Reverse lookup: phone number" aria-label="Phone number" />
         <button type="submit">Look up</button>
       </form>
+
+      {counties.length > 0 && (
+        <section style={{ marginTop: 24 }}>
+          <h2 style={{ fontSize: 18 }}>Browse by county</h2>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {counties.map((c) => (
+              <Link key={c.slug} href={`/${c.slug}`} className="badge" style={{ padding: "6px 12px" }}>
+                {c.county} ({c.count})
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

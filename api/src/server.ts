@@ -9,6 +9,7 @@ import { eventRoutes } from "./routes/events.js";
 import { claimRoutes } from "./routes/claims.js";
 import { analyticsRoutes } from "./routes/analytics.js";
 import { billingRoutes } from "./routes/billing.js";
+import { directoryRoutes } from "./routes/directory.js";
 
 async function main() {
   const app = Fastify({ logger: true, trustProxy: true });
@@ -35,6 +36,7 @@ async function main() {
   await app.register(claimRoutes);
   await app.register(analyticsRoutes);
   await app.register(billingRoutes);
+  await app.register(directoryRoutes);
 
   const port = Number(process.env.API_PORT ?? 4000);
   await app.listen({ port, host: "0.0.0.0" });

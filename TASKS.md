@@ -29,6 +29,7 @@ search + event ingest all working against Supabase. Next up: CRO API access, the
 | 1.3 | Search: name/category/location/reverse-phone | — | DONE (API + web; app pending) |
 | 1.4 | Analytics events (both surfaces) → listing_events | — | DONE web (beacon/call/dwell); app pending |
 | 1.5 | Claim-listing flow + takedown endpoint | — | DONE (API verified: claim pending, takedown un-verifies phone) |
+| 1.6 | SEO landing pages (county hub + category×county) | — | DONE (/[county], /[county]/[category]; ItemList+Breadcrumb schema, pagination, sitemap, homepage links; 404s handled). API: /api/listings,/api/categories,/api/counties. County backfilled + scraper stamps county. |
 
 ## Phase 2 — Monetization
 | # | Task | Owner | Status |

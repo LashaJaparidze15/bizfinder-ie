@@ -39,6 +39,31 @@ export interface BusinessListing extends Business {
 export type Surface = "web" | "ios" | "android";
 export type EventType = "impression" | "click" | "call" | "dwell";
 
+// Directory / SEO landing pages
+export interface DirectoryItem {
+  id: number;
+  slug: string;
+  name: string;
+  hasWebsite: boolean;
+  category: string | null;
+  town: string | null;
+  county: string | null;
+}
+export interface ListingsResponse {
+  total: number;
+  items: DirectoryItem[];
+}
+export interface CategoryCount {
+  slug: string;
+  name: string;
+  count: number;
+}
+export interface CountyCount {
+  county: string;
+  slug: string;
+  count: number;
+}
+
 export interface SurfaceCounts {
   impressions: number;
   clicks: number;
@@ -139,6 +164,33 @@ export function createApiClient({ baseUrl, fetch: f = fetch }: ApiClientOptions)
       const res = await f(url(`/api/businesses/${encodeURIComponent(slug)}`));
       if (!res.ok) throw new Error(`getBusiness failed: ${res.status}`);
       return (await res.json()) as BusinessListing;
+    },
+
+    async listBusinesses(params: {
+      category?: string;
+      county?: string;
+      limit?: number;
+      offset?: number;
+    }): Promise<ListingsResponse> {
+      const qs = new URLSearchParams();
+      Object.entries(params).forEach(([k, v]) => {
+        if (v != null) qs.set(k, String(v));
+      });
+      const res = await f(url(`/api/listings?${qs.toString()}`));
+      if (!res.ok) throw new Error(`listBusinesses failed: ${res.status}`);
+      return (await res.json()) as ListingsResponse;
+    },
+
+    async getCategories(county?: string): Promise<CategoryCount[]> {
+      const res = await f(url(`/api/categories${county ? `?county=${encodeURIComponent(county)}` : ""}`));
+      if (!res.ok) throw new Error(`getCategories failed: ${res.status}`);
+      return (await res.json()) as CategoryCount[];
+    },
+
+    async getCounties(): Promise<CountyCount[]> {
+      const res = await f(url(`/api/counties`));
+      if (!res.ok) throw new Error(`getCounties failed: ${res.status}`);
+      return (await res.json()) as CountyCount[];
     },
 
     async getAnalytics(businessId: number, days = 30): Promise<AnalyticsResponse> {

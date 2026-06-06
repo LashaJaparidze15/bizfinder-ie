@@ -117,6 +117,11 @@ def fetch(county: str, limit: int) -> list[dict]:
     resp.raise_for_status()
     elements = resp.json().get("elements", [])
     records = [to_source_record(el) for el in elements if el.get("tags", {}).get("name")]
+    # We queried within the county's boundary, so stamp it on each record
+    # (OSM's addr:county tag is usually absent).
+    for r in records:
+        if not r.get("county"):
+            r["county"] = county
     return records
 
 
