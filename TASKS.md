@@ -35,7 +35,7 @@ search + event ingest all working against Supabase. Next up: CRO API access, the
 |---|------|-------|--------|
 | 2.1 | Nightly rollup → analytics_daily (per surface) | — | DONE (`db/rollup.mjs`; verified vs raw counts) |
 | 2.2 | Analytics API (dashboard data, web-vs-app) | — | DONE (`/api/analytics/:id`; verified) |
-| 2.3 | Stripe billing + subscription gate | — | IMPLEMENTED (checkout/webhook/status + 402 gate + web subscribe CTA; degrades gracefully; needs STRIPE_SECRET_KEY/PRICE_ID/WEBHOOK_SECRET to activate) |
+| 2.3 | Stripe billing + subscription gate | — | DONE & VERIFIED with real test payment (checkout→webhook→subscription active→claim→dashboard unlocked). Keys live in .env. |
 | 2.4 | Dashboard UI (web) consuming /api/analytics | — | DONE (`/dashboard/[id]`; verified SSR shows totals + web-vs-app) |
 
 ## Notes / decisions
