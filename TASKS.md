@@ -15,7 +15,7 @@
 | 0.5 | `packages/shared` — types + zod + API client | — | DONE |
 | 0.6 | `api/` skeleton — health + DB conn + search stub | — | DONE (boots; verified /health + 503 fallback) |
 | 0.7 | OSM Overpass scraper (one county) → business_sources | — | DONE (verified live: 30 Galway POIs in dry-run) |
-| 0.8 | CRO ingest stub → business_sources | — | STUB (needs CRO API key from services.cro.ie) |
+| 0.8 | CRO ingest → business_sources | — | IMPLEMENTED (free CWS company-search API; needs CRO_API_EMAIL+KEY to run) |
 | 0.9 | Entity-resolution v1 (merge sources → businesses) | — | DONE (`resolve.py`; 300 rows→150 biz, dedup verified idempotent) |
 
 **Phase 0 COMPLETE & verified** (2026-06-04): 150 Galway businesses live; API name/geo/reverse-phone
@@ -36,7 +36,7 @@ search + event ingest all working against Supabase. Next up: CRO API access, the
 | 2.1 | Nightly rollup → analytics_daily (per surface) | — | DONE (`db/rollup.mjs`; verified vs raw counts) |
 | 2.2 | Analytics API (dashboard data, web-vs-app) | — | DONE (`/api/analytics/:id`; verified) |
 | 2.3 | Stripe billing + subscription gate | — | TODO (needs Stripe keys) |
-| 2.4 | Dashboard UI (web) consuming /api/analytics | — | TODO |
+| 2.4 | Dashboard UI (web) consuming /api/analytics | — | DONE (`/dashboard/[id]`; verified SSR shows totals + web-vs-app) |
 
 ## Notes / decisions
 - Working repo name `bizfinder-ie` — rename when brand is chosen.

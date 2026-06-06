@@ -39,6 +39,26 @@ export interface BusinessListing extends Business {
 export type Surface = "web" | "ios" | "android";
 export type EventType = "impression" | "click" | "call" | "dwell";
 
+export interface SurfaceCounts {
+  impressions: number;
+  clicks: number;
+  calls: number;
+}
+export interface AnalyticsResponse {
+  businessId: number;
+  days: number;
+  totals: SurfaceCounts;
+  bySurface: Record<string, SurfaceCounts>;
+  daily: Array<{
+    date: string;
+    surface: string;
+    impressions: number;
+    clicks: number;
+    calls: number;
+    avgDwellMs: number;
+  }>;
+}
+
 // ---------------------------------------------------------------------------
 // Validation schemas (shared by API and clients)
 // ---------------------------------------------------------------------------
@@ -119,6 +139,12 @@ export function createApiClient({ baseUrl, fetch: f = fetch }: ApiClientOptions)
       const res = await f(url(`/api/businesses/${encodeURIComponent(slug)}`));
       if (!res.ok) throw new Error(`getBusiness failed: ${res.status}`);
       return (await res.json()) as BusinessListing;
+    },
+
+    async getAnalytics(businessId: number, days = 30): Promise<AnalyticsResponse> {
+      const res = await f(url(`/api/analytics/${businessId}?days=${days}`));
+      if (!res.ok) throw new Error(`getAnalytics failed: ${res.status}`);
+      return (await res.json()) as AnalyticsResponse;
     },
 
     // Fire-and-forget; never block UI on analytics.
