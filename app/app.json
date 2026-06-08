@@ -11,7 +11,7 @@
     "android": { "package": "ie.bizfinder.app" },
     "plugins": ["expo-router"],
     "extra": {
-      "apiUrl": "http://172.20.10.4:4000"
+      "apiUrl": "https://bizfinder-api.onrender.com"
     }
   }
 }
