@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+// Tolerate SITE_URL set without a protocol (e.g. "foo.vercel.app") — new URL() would otherwise throw.
+const rawSite = process.env.SITE_URL || "http://localhost:3000";
+const siteUrl = /^https?:\/\//.test(rawSite) ? rawSite : `https://${rawSite}`;
+
 export const metadata: Metadata = {
   title: {
     default: "bizfinder.ie — Find Irish businesses",
@@ -8,7 +12,7 @@ export const metadata: Metadata = {
   },
   description:
     "Search Irish businesses by name, type, location or phone number. The national business directory.",
-  metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
