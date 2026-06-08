@@ -38,7 +38,8 @@ async function main() {
   await app.register(billingRoutes);
   await app.register(directoryRoutes);
 
-  const port = Number(process.env.API_PORT ?? 4000);
+  // Cloud hosts inject PORT; fall back to API_PORT / 4000 for local dev.
+  const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
   await app.listen({ port, host: "0.0.0.0" });
 }
 

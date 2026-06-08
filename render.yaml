@@ -1,0 +1,27 @@
+# Render Blueprint — deploys the bizfinder API as an always-on public service.
+# Create a free account at render.com → New + → Blueprint → connect this repo.
+# Render reads this file, then you set the secret env vars (below) in the dashboard.
+services:
+  - type: web
+    name: bizfinder-api
+    runtime: node
+    plan: free            # free tier sleeps after ~15 min idle (cold start ~50s); upgrade later
+    rootDir: .            # monorepo: build from the root so workspaces resolve
+    buildCommand: npm install
+    startCommand: npm run start --workspace @bizfinder/api
+    healthCheckPath: /health
+    autoDeploy: true      # redeploy on every push to the default branch
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Secrets — set these in the Render dashboard (copy from your local .env). Never committed.
+      - key: DATABASE_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PRICE_ID
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
