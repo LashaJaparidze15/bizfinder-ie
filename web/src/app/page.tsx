@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
 
-export const revalidate = 3600;
+export const revalidate = 300; // refresh the "Browse by county" list every 5 min
 
 export default async function HomePage() {
   const counties = await api.getCounties().catch(() => []);
