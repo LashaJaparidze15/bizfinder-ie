@@ -7,6 +7,7 @@ import { Beacon } from "@/components/Beacon";
 import { CallLink } from "@/components/CallLink";
 import { ReviewForm } from "@/components/ReviewForm";
 import { BizPhoto } from "@/components/BizPhoto";
+import { ClaimForm } from "@/components/ClaimForm";
 
 async function getBusiness(slug: string): Promise<BusinessListing | null> {
   try {
@@ -124,6 +125,12 @@ export default async function BusinessPage({ params }: { params: { slug: string 
       <div className="card">
         <a href={`bizfinderie://business/${b.slug}`}>📱 Open in the bizfinder app</a>
         <div className="muted">Get directions, save, and call faster in the app.</div>
+      </div>
+
+      <div className="card" style={{ background: "#f3faf6", borderColor: "#bfe6d2" }}>
+        <strong>Is this your business?</strong>{" "}
+        <span className="muted">Claim it to manage the listing and see its analytics.</span>
+        <ClaimForm businessId={b.id} />
       </div>
 
       {similar.length > 0 && (

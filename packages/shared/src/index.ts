@@ -223,6 +223,16 @@ export function createApiClient({ baseUrl, fetch: f = fetch }: ApiClientOptions)
       return (await res.json()) as DirectoryItem[];
     },
 
+    async createClaim(input: { businessId: number; email: string }): Promise<{ id: string; status: string }> {
+      const res = await f(url(`/api/claims`), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) throw new Error(`createClaim failed: ${res.status}`);
+      return (await res.json()) as { id: string; status: string };
+    },
+
     async createReview(slug: string, input: ReviewInput): Promise<Review> {
       const res = await f(url(`/api/businesses/${encodeURIComponent(slug)}/reviews`), {
         method: "POST",
