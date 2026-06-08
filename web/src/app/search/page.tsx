@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { SearchQuery, BusinessListing } from "@bizfinder/shared";
 import { api } from "@/lib/api";
+import { BizPhoto } from "@/components/BizPhoto";
 
 export const dynamic = "force-dynamic"; // search results are always fresh
 
@@ -58,15 +59,21 @@ export default async function SearchPage({
       )}
 
       {results.map((b) => (
-        <div className="card" key={b.id}>
-          <Link href={`/business/${b.slug}`} style={{ fontWeight: 600, fontSize: 18 }}>
-            {b.name}
-          </Link>
-          <div className="muted">
-            {[b.location?.town, b.location?.county].filter(Boolean).join(", ")}
-            {b.distanceMeters != null ? ` · ${Math.round(b.distanceMeters)} m away` : ""}
+        <div className="card" key={b.id} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div style={{ width: 72, flex: "none" }}>
+            <BizPhoto photoUrl={b.photoUrl} name={b.name} category={null} height={72} rounded={10} />
           </div>
-          {!b.hasWebsite && <span className="badge">No website</span>}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Link href={`/business/${b.slug}`} style={{ fontWeight: 600, fontSize: 18 }}>
+              {b.name}
+            </Link>
+            <div className="muted">
+              {[b.location?.town, b.location?.county].filter(Boolean).join(", ")}
+              {b.distanceMeters != null ? ` · ${Math.round(b.distanceMeters)} m away` : ""}
+              {b.avgRating != null ? ` · ★ ${b.avgRating} (${b.reviewCount})` : ""}
+            </div>
+            {!b.hasWebsite && <span className="badge">No website</span>}
+          </div>
         </div>
       ))}
     </main>

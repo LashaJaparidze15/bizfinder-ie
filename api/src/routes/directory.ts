@@ -69,7 +69,7 @@ export async function directoryRoutes(app: FastifyInstance) {
 
       const items = await app.db.query(
         `select b.id, b.slug, b.name, b.has_website, c.name as category, l.town, l.county,
-                ra.cnt as review_count, ra.avg as avg_rating
+                b.photo_url, ra.cnt as review_count, ra.avg as avg_rating
            from businesses b ${joins}
            left join (select business_id, count(*)::int cnt, avg(rating)::float avg
                         from reviews group by business_id) ra on ra.business_id = b.id
@@ -91,6 +91,7 @@ export async function directoryRoutes(app: FastifyInstance) {
           county: r.county,
           avgRating: r.avg_rating != null ? Math.round(r.avg_rating * 10) / 10 : null,
           reviewCount: r.review_count ?? 0,
+          photoUrl: r.photo_url,
         })),
       };
     },

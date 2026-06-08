@@ -56,7 +56,7 @@ export async function searchRoutes(app: FastifyInstance) {
 
     const sql = `
       select b.id, b.slug, b.name, b.category_id, b.description, b.trust_score,
-             b.has_website, b.website_url,
+             b.has_website, b.website_url, b.photo_url, b.photo_source,
              l.address_line, l.eircode, l.county, l.town,
              ST_Y(l.geom::geometry) as lat, ST_X(l.geom::geometry) as lng,
              ${distanceSelect}
@@ -101,6 +101,8 @@ export async function searchRoutes(app: FastifyInstance) {
       trustScore: Number(r.trust_score),
       hasWebsite: r.has_website,
       websiteUrl: r.website_url,
+      photoUrl: r.photo_url,
+      photoSource: r.photo_source,
       location: r.county || r.address_line
         ? {
             addressLine: r.address_line,

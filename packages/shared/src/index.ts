@@ -14,6 +14,8 @@ export interface Business {
   trustScore: number;
   hasWebsite: boolean;
   websiteUrl: string | null;
+  photoUrl: string | null;
+  photoSource: string | null; // og | logo | mapillary | places | category | manual
 }
 
 export interface Location {
@@ -61,6 +63,7 @@ export interface DirectoryItem {
   county: string | null;
   avgRating: number | null;
   reviewCount: number;
+  photoUrl: string | null;
 }
 export interface ListingsResponse {
   total: number;

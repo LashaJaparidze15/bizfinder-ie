@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { BizPhoto } from "@/components/BizPhoto";
 
 export const revalidate = 3600;
 
@@ -91,12 +92,20 @@ export default async function CategoryCountyPage({
       </p>
 
       {items.map((b) => (
-        <div className="card" key={b.id}>
-          <Link href={`/business/${b.slug}`} style={{ fontWeight: 600, fontSize: 18 }}>
-            {b.name}
-          </Link>
-          <div className="muted">{[b.town, b.county].filter(Boolean).join(", ")}</div>
-          {!b.hasWebsite && <span className="badge">No website</span>}
+        <div className="card" key={b.id} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div style={{ width: 72, flex: "none" }}>
+            <BizPhoto photoUrl={b.photoUrl} name={b.name} category={category.name} height={72} rounded={10} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Link href={`/business/${b.slug}`} style={{ fontWeight: 600, fontSize: 18 }}>
+              {b.name}
+            </Link>
+            <div className="muted">
+              {[b.town, b.county].filter(Boolean).join(", ")}
+              {b.avgRating != null ? ` · ★ ${b.avgRating} (${b.reviewCount})` : ""}
+            </div>
+            {!b.hasWebsite && <span className="badge">No website</span>}
+          </div>
         </div>
       ))}
 

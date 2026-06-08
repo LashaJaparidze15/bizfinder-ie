@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { Beacon } from "@/components/Beacon";
 import { CallLink } from "@/components/CallLink";
 import { ReviewForm } from "@/components/ReviewForm";
+import { BizPhoto } from "@/components/BizPhoto";
 
 async function getBusiness(slug: string): Promise<BusinessListing | null> {
   try {
@@ -79,6 +80,9 @@ export default async function BusinessPage({ params }: { params: { slug: string 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Beacon businessId={b.id} />
 
+      <div style={{ margin: "4px 0 12px" }}>
+        <BizPhoto photoUrl={b.photoUrl} name={b.name} category={null} height={200} />
+      </div>
       <h1 style={{ marginBottom: 4 }}>{b.name}</h1>
       {where && <p className="muted" style={{ marginTop: 0, marginBottom: 4 }}>{where}</p>}
       {b.avgRating != null ? (
