@@ -217,6 +217,12 @@ export function createApiClient({ baseUrl, fetch: f = fetch }: ApiClientOptions)
       return (await res.json()) as CountyCount[];
     },
 
+    async getSimilar(slug: string, limit = 6): Promise<DirectoryItem[]> {
+      const res = await f(url(`/api/businesses/${encodeURIComponent(slug)}/similar?limit=${limit}`));
+      if (!res.ok) throw new Error(`getSimilar failed: ${res.status}`);
+      return (await res.json()) as DirectoryItem[];
+    },
+
     async createReview(slug: string, input: ReviewInput): Promise<Review> {
       const res = await f(url(`/api/businesses/${encodeURIComponent(slug)}/reviews`), {
         method: "POST",

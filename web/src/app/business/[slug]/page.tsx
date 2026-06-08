@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import type { BusinessListing } from "@bizfinder/shared";
 import { api } from "@/lib/api";
 import { Beacon } from "@/components/Beacon";
@@ -33,6 +34,7 @@ export async function generateMetadata({
 export default async function BusinessPage({ params }: { params: { slug: string } }) {
   const b = await getBusiness(params.slug);
   if (!b) notFound();
+  const similar = await api.getSimilar(b.slug, 6).catch(() => []);
 
   const where = [b.location?.addressLine, b.location?.town, b.location?.county, b.location?.eircode]
     .filter(Boolean)
@@ -123,6 +125,26 @@ export default async function BusinessPage({ params }: { params: { slug: string 
         <a href={`bizfinderie://business/${b.slug}`}>📱 Open in the bizfinder app</a>
         <div className="muted">Get directions, save, and call faster in the app.</div>
       </div>
+
+      {similar.length > 0 && (
+        <section style={{ marginTop: 20 }}>
+          <h2 style={{ fontSize: 18 }}>Similar businesses</h2>
+          {similar.map((s) => (
+            <div className="card" key={s.id} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <div style={{ width: 56, flex: "none" }}>
+                <BizPhoto photoUrl={s.photoUrl} name={s.name} category={s.category} height={56} rounded={8} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Link href={`/business/${s.slug}`} style={{ fontWeight: 600 }}>{s.name}</Link>
+                <div className="muted">
+                  {[s.town, s.county].filter(Boolean).join(", ")}
+                  {s.avgRating != null ? ` · ★ ${s.avgRating} (${s.reviewCount})` : ""}
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       <section style={{ marginTop: 20 }}>
         <h2 style={{ fontSize: 18 }}>Reviews</h2>

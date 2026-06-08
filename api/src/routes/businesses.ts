@@ -95,4 +95,43 @@ export async function businessRoutes(app: FastifyInstance) {
       id: rv.id, rating: rv.rating, authorName: rv.author_name, body: rv.body, createdAt: rv.created_at,
     });
   });
+
+  // Semantically similar businesses (pgvector cosine on precomputed embeddings — no ML at runtime).
+  app.get<{ Params: { slug: string }; Querystring: { limit?: string } }>(
+    "/api/businesses/:slug/similar",
+    async (req, reply) => {
+      if (!app.db) return reply.code(503).send({ error: "database not configured" });
+      const limit = Math.min(Math.max(Number(req.query.limit ?? 6), 1), 20);
+
+      const tgt = await app.db.query(`select embedding from businesses where slug = $1`, [req.params.slug]);
+      if (tgt.rows.length === 0 || !tgt.rows[0].embedding) return []; // not embedded yet
+
+      const { rows } = await app.db.query(
+        `select b.id, b.slug, b.name, b.has_website, c.name as category, l.town, l.county, b.photo_url,
+                ra.cnt as review_count, ra.avg as avg_rating
+           from businesses b
+           left join locations l on l.business_id = b.id
+           left join categories c on c.id = b.category_id
+           left join (select business_id, count(*)::int cnt, avg(rating)::float avg
+                        from reviews group by business_id) ra on ra.business_id = b.id
+          where b.slug <> $1 and b.embedding is not null
+          order by b.embedding <=> $2::vector
+          limit $3`,
+        [req.params.slug, tgt.rows[0].embedding, limit],
+      );
+
+      return rows.map((r) => ({
+        id: r.id,
+        slug: r.slug,
+        name: r.name,
+        hasWebsite: r.has_website,
+        category: r.category,
+        town: r.town,
+        county: r.county,
+        photoUrl: r.photo_url,
+        avgRating: r.avg_rating != null ? Math.round(r.avg_rating * 10) / 10 : null,
+        reviewCount: r.review_count ?? 0,
+      }));
+    },
+  );
 }
