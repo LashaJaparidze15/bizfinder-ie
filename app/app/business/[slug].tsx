@@ -4,6 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import type { BusinessListing } from "@bizfinder/shared";
 import { api } from "@/lib/api";
 import { track } from "@/lib/analytics";
+import { BizPhoto } from "@/components/BizPhoto";
 
 export default function BusinessScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -49,8 +50,20 @@ export default function BusinessScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      <View style={{ marginBottom: 12 }}>
+        <BizPhoto photoUrl={b.photoUrl} name={b.name} height={190} radius={12} />
+      </View>
       <Text style={styles.title}>{b.name}</Text>
       {where ? <Text style={styles.muted}>{where}</Text> : null}
+      {b.avgRating != null ? (
+        <Text style={{ marginTop: 4 }}>
+          <Text style={{ color: "#e8a200" }}>
+            {"★".repeat(Math.round(b.avgRating)) + "☆".repeat(5 - Math.round(b.avgRating))}
+          </Text>
+          <Text style={{ fontWeight: "600" }}>  {b.avgRating}</Text>
+          <Text style={styles.muted}>  ·  {b.reviewCount} review{b.reviewCount === 1 ? "" : "s"}</Text>
+        </Text>
+      ) : null}
 
       {b.phones.map((p) => (
         <Pressable key={p.e164} style={styles.callBtn} onPress={() => call(p.e164)}>
