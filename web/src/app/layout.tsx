@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   description:
     "Search Irish businesses by name, type, location or phone number. The national business directory.",
   metadataBase: new URL(siteUrl),
+  verification: { google: "yFjM4JljT5O9TsZzViKrnFjVUmQbHlFSpKq1xezyhE8" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
