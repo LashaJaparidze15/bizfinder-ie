@@ -106,14 +106,22 @@ def to_source_record(el: dict) -> dict:
     }
 
 
-def fetch(county: str, limit: int) -> list[dict]:
+def fetch(county: str, limit: int, retries: int = 4) -> list[dict]:
     query = build_query(county, limit)
-    resp = requests.post(
-        OVERPASS_URL,
-        data={"data": query},
-        headers={"User-Agent": USER_AGENT},
-        timeout=120,
-    )
+    resp = None
+    for attempt in range(retries):
+        resp = requests.post(
+            OVERPASS_URL,
+            data={"data": query},
+            headers={"User-Agent": USER_AGENT},
+            timeout=120,
+        )
+        if resp.status_code == 429:  # Overpass rate limit — back off and retry
+            wait = 15 * (attempt + 1)
+            print(f"  429 rate-limited; waiting {wait}s (attempt {attempt + 1}/{retries})", file=sys.stderr)
+            time.sleep(wait)
+            continue
+        break
     resp.raise_for_status()
     elements = resp.json().get("elements", [])
     records = [to_source_record(el) for el in elements if el.get("tags", {}).get("name")]
