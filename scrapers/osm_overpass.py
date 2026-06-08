@@ -116,9 +116,9 @@ def fetch(county: str, limit: int, retries: int = 4) -> list[dict]:
             headers={"User-Agent": USER_AGENT},
             timeout=120,
         )
-        if resp.status_code == 429:  # Overpass rate limit — back off and retry
+        if resp.status_code == 429 or resp.status_code >= 500:  # rate limit / server timeout — retry
             wait = 15 * (attempt + 1)
-            print(f"  429 rate-limited; waiting {wait}s (attempt {attempt + 1}/{retries})", file=sys.stderr)
+            print(f"  {resp.status_code}; waiting {wait}s (attempt {attempt + 1}/{retries})", file=sys.stderr)
             time.sleep(wait)
             continue
         break
