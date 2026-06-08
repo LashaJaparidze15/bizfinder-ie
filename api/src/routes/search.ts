@@ -84,6 +84,14 @@ export async function searchRoutes(app: FastifyInstance) {
       phonesByBiz.set(ph.business_id, list);
     }
 
+    const reviewAgg = await app.db.query(
+      `select business_id, count(*)::int as cnt, avg(rating)::float as avg
+         from reviews where business_id = any($1) group by business_id`,
+      [ids],
+    );
+    const ratingByBiz = new Map<number, { avg: number | null; cnt: number }>();
+    for (const rv of reviewAgg.rows) ratingByBiz.set(rv.business_id, { avg: rv.avg, cnt: rv.cnt });
+
     const results: BusinessListing[] = rows.map((r) => ({
       id: r.id,
       slug: r.slug,
@@ -104,6 +112,11 @@ export async function searchRoutes(app: FastifyInstance) {
           }
         : null,
       phones: phonesByBiz.get(r.id) ?? [],
+      avgRating:
+        ratingByBiz.get(r.id)?.avg != null
+          ? Math.round((ratingByBiz.get(r.id)!.avg as number) * 10) / 10
+          : null,
+      reviewCount: ratingByBiz.get(r.id)?.cnt ?? 0,
       ...(r.distance_meters != null ? { distanceMeters: Number(r.distance_meters) } : {}),
     }));
 

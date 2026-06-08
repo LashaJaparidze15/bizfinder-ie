@@ -4,6 +4,7 @@ import type { BusinessListing } from "@bizfinder/shared";
 import { api } from "@/lib/api";
 import { Beacon } from "@/components/Beacon";
 import { CallLink } from "@/components/CallLink";
+import { ReviewForm } from "@/components/ReviewForm";
 
 async function getBusiness(slug: string): Promise<BusinessListing | null> {
   try {
@@ -58,6 +59,19 @@ export default async function BusinessPage({ params }: { params: { slug: string 
     ...(b.location?.lat && b.location?.lng
       ? { geo: { "@type": "GeoCoordinates", latitude: b.location.lat, longitude: b.location.lng } }
       : {}),
+    ...(b.avgRating != null && b.reviewCount > 0
+      ? { aggregateRating: { "@type": "AggregateRating", ratingValue: b.avgRating, reviewCount: b.reviewCount } }
+      : {}),
+    ...(b.reviews && b.reviews.length
+      ? {
+          review: b.reviews.slice(0, 10).map((rv) => ({
+            "@type": "Review",
+            reviewRating: { "@type": "Rating", ratingValue: rv.rating },
+            author: { "@type": "Person", name: rv.authorName || "Anonymous" },
+            ...(rv.body ? { reviewBody: rv.body } : {}),
+          })),
+        }
+      : {}),
   };
 
   return (
@@ -66,7 +80,19 @@ export default async function BusinessPage({ params }: { params: { slug: string 
       <Beacon businessId={b.id} />
 
       <h1 style={{ marginBottom: 4 }}>{b.name}</h1>
-      {where && <p className="muted" style={{ marginTop: 0 }}>{where}</p>}
+      {where && <p className="muted" style={{ marginTop: 0, marginBottom: 4 }}>{where}</p>}
+      {b.avgRating != null ? (
+        <p style={{ marginTop: 0 }}>
+          <span style={{ color: "#e8a200" }}>
+            {"★".repeat(Math.round(b.avgRating))}
+            {"☆".repeat(5 - Math.round(b.avgRating))}
+          </span>{" "}
+          <strong>{b.avgRating}</strong>{" "}
+          <span className="muted">· {b.reviewCount} review{b.reviewCount === 1 ? "" : "s"}</span>
+        </p>
+      ) : (
+        <p className="muted" style={{ marginTop: 0 }}>No reviews yet</p>
+      )}
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "12px 0" }}>
         {b.phones.map((p) => (
@@ -93,6 +119,24 @@ export default async function BusinessPage({ params }: { params: { slug: string 
         <a href={`bizfinderie://business/${b.slug}`}>📱 Open in the bizfinder app</a>
         <div className="muted">Get directions, save, and call faster in the app.</div>
       </div>
+
+      <section style={{ marginTop: 20 }}>
+        <h2 style={{ fontSize: 18 }}>Reviews</h2>
+        {b.reviews && b.reviews.length > 0 ? (
+          b.reviews.map((rv) => (
+            <div className="card" key={rv.id}>
+              <div>
+                <span style={{ color: "#e8a200" }}>{"★".repeat(rv.rating)}</span>{" "}
+                <strong>{rv.authorName || "Anonymous"}</strong>
+              </div>
+              {rv.body && <div className="muted" style={{ marginTop: 4 }}>{rv.body}</div>}
+            </div>
+          ))
+        ) : (
+          <p className="muted">Be the first to review {b.name}.</p>
+        )}
+        <ReviewForm slug={b.slug} />
+      </section>
     </main>
   );
 }

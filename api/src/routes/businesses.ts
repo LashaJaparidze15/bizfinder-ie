@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { BusinessListing } from "@bizfinder/shared";
+import { reviewInputSchema } from "@bizfinder/shared";
 
 // Single business by slug (the canonical listing-page payload for web + app).
 export async function businessRoutes(app: FastifyInstance) {
@@ -34,6 +35,16 @@ export async function businessRoutes(app: FastifyInstance) {
       [r.id],
     );
 
+    const agg = await app.db.query(
+      `select count(*)::int as cnt, avg(rating)::float as avg from reviews where business_id = $1`,
+      [r.id],
+    );
+    const reviewsRes = await app.db.query(
+      `select id, rating, author_name, body, created_at
+         from reviews where business_id = $1 order by created_at desc limit 50`,
+      [r.id],
+    );
+
     const listing: BusinessListing = {
       id: r.id,
       slug: r.slug,
@@ -47,7 +58,39 @@ export async function businessRoutes(app: FastifyInstance) {
         ? { addressLine: r.address_line, eircode: r.eircode, county: r.county, town: r.town, lat: r.lat, lng: r.lng }
         : null,
       phones: phones.rows.map((ph) => ({ e164: ph.e164, isCommercialVerified: ph.is_commercial_verified })),
+      avgRating: agg.rows[0].avg != null ? Math.round(agg.rows[0].avg * 10) / 10 : null,
+      reviewCount: agg.rows[0].cnt,
+      reviews: reviewsRes.rows.map((rv) => ({
+        id: rv.id,
+        rating: rv.rating,
+        authorName: rv.author_name,
+        body: rv.body,
+        createdAt: rv.created_at,
+      })),
     };
     return listing;
+  });
+
+  // Submit a first-party review for a business.
+  app.post<{ Params: { slug: string } }>("/api/businesses/:slug/reviews", async (req, reply) => {
+    if (!app.db) return reply.code(503).send({ error: "database not configured" });
+    const parsed = reviewInputSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: parsed.error.issues[0]?.message ?? "invalid review" });
+    }
+    const biz = await app.db.query(`select id from businesses where slug = $1`, [req.params.slug]);
+    if (biz.rows.length === 0) return reply.code(404).send({ error: "not found" });
+
+    const { rating, authorName, body } = parsed.data;
+    const ins = await app.db.query(
+      `insert into reviews (business_id, rating, author_name, body)
+       values ($1,$2,$3,$4)
+       returning id, rating, author_name, body, created_at`,
+      [biz.rows[0].id, rating, authorName ?? null, body ?? null],
+    );
+    const rv = ins.rows[0];
+    return reply.code(201).send({
+      id: rv.id, rating: rv.rating, authorName: rv.author_name, body: rv.body, createdAt: rv.created_at,
+    });
   });
 }

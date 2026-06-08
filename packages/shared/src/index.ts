@@ -30,9 +30,20 @@ export interface PhoneNumber {
   isCommercialVerified: boolean;
 }
 
+export interface Review {
+  id: number;
+  rating: number; // 1..5
+  authorName: string | null;
+  body: string | null;
+  createdAt: string;
+}
+
 export interface BusinessListing extends Business {
   location: Location | null;
   phones: PhoneNumber[];
+  avgRating: number | null; // null when no reviews yet
+  reviewCount: number;
+  reviews?: Review[]; // populated on the single-business endpoint
   distanceMeters?: number; // present when searched by location
 }
 
@@ -48,6 +59,8 @@ export interface DirectoryItem {
   category: string | null;
   town: string | null;
   county: string | null;
+  avgRating: number | null;
+  reviewCount: number;
 }
 export interface ListingsResponse {
   total: number;
@@ -118,6 +131,14 @@ export const eventInputSchema = z.object({
   referrer: z.string().max(500).optional(),
 });
 export type EventInput = z.infer<typeof eventInputSchema>;
+
+// First-party review submission.
+export const reviewInputSchema = z.object({
+  rating: z.coerce.number().int().min(1).max(5),
+  authorName: z.string().trim().max(80).optional(),
+  body: z.string().trim().max(2000).optional(),
+});
+export type ReviewInput = z.infer<typeof reviewInputSchema>;
 
 // Claim a listing (business owner). Creates/links an account by email.
 export const claimInputSchema = z.object({
@@ -191,6 +212,16 @@ export function createApiClient({ baseUrl, fetch: f = fetch }: ApiClientOptions)
       const res = await f(url(`/api/counties`));
       if (!res.ok) throw new Error(`getCounties failed: ${res.status}`);
       return (await res.json()) as CountyCount[];
+    },
+
+    async createReview(slug: string, input: ReviewInput): Promise<Review> {
+      const res = await f(url(`/api/businesses/${encodeURIComponent(slug)}/reviews`), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) throw new Error(`createReview failed: ${res.status}`);
+      return (await res.json()) as Review;
     },
 
     async getAnalytics(businessId: number, days = 30): Promise<AnalyticsResponse> {
