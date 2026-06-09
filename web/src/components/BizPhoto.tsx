@@ -1,30 +1,14 @@
 "use client";
 import { useState } from "react";
+import { Icon, iconForCategory } from "@/components/Icon";
 
 // Real photo if we have one (og:image etc.); otherwise a deterministic, category-themed
 // placeholder so a listing is never blank. Falls back to the placeholder if the image 404s.
-function colorFromString(s: string): string {
+function gradientFromString(s: string): string {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = s.charCodeAt(i) + ((h << 5) - h);
-  return `hsl(${((h % 360) + 360) % 360}, 42%, 52%)`;
-}
-
-function emojiFor(category: string | null): string {
-  const c = (category || "").toLowerCase();
-  if (/pub|bar/.test(c)) return "🍺";
-  if (/cafe|coffee/.test(c)) return "☕";
-  if (/restaurant|fast|food|takeaway/.test(c)) return "🍽️";
-  if (/hotel|guest|hostel|lodg/.test(c)) return "🏨";
-  if (/fuel|petrol/.test(c)) return "⛽";
-  if (/bank/.test(c)) return "🏦";
-  if (/pharmac|chemist/.test(c)) return "💊";
-  if (/supermarket|convenience|grocer/.test(c)) return "🛒";
-  if (/hair|beauty|salon/.test(c)) return "💇";
-  if (/bakery/.test(c)) return "🥐";
-  if (/car|garage|repair|tyre/.test(c)) return "🚗";
-  if (/doctor|dentist|clinic|vet|health/.test(c)) return "🩺";
-  if (/book|library/.test(c)) return "📚";
-  return "🏢";
+  const hue = ((h % 360) + 360) % 360;
+  return `linear-gradient(140deg, hsl(${hue}, 46%, 58%), hsl(${(hue + 32) % 360}, 52%, 42%))`;
 }
 
 export function BizPhoto({
@@ -58,15 +42,16 @@ export function BizPhoto({
     <div
       style={{
         ...base,
-        background: colorFromString(category || name),
+        background: gradientFromString(category || name),
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: Math.max(height / 3, 28),
+        color: "rgba(255,255,255,0.92)",
+        filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.22))",
       }}
       aria-label={`${category || "business"} placeholder`}
     >
-      {emojiFor(category)}
+      <Icon name={iconForCategory(category)} size={Math.max(Math.round(height / 2.6), 22)} strokeWidth={1.75} />
     </div>
   );
 }

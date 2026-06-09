@@ -50,19 +50,18 @@ export function ReviewForm({ slug }: { slug: string }) {
         </select>
       </label>
       <input
+        className="input"
         placeholder="Your name (optional)"
         value={authorName}
         onChange={(e) => setAuthorName(e.target.value)}
-        style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
       />
       <textarea
         placeholder="Your review (optional)"
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={3}
-        style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
       />
-      <button type="submit" disabled={busy} style={{ padding: "8px 14px", border: 0, borderRadius: 8, background: "#0b6", color: "#fff", justifySelf: "start" }}>
+      <button type="submit" disabled={busy} className="btn" style={{ justifySelf: "start" }}>
         {busy ? "…" : "Submit review"}
       </button>
       {err && <p className="muted">{err}</p>}

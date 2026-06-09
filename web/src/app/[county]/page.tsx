@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { Icon, iconForCategory } from "@/components/Icon";
 
 export const revalidate = 3600;
 
@@ -37,19 +38,25 @@ export default async function CountyHub({ params }: { params: { county: string }
   };
 
   return (
-    <main className="container">
+    <main className="container rise rise-1">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <nav className="muted" style={{ fontSize: 14 }}>
-        <Link href="/">Home</Link> › {county.county}
+      <nav className="crumbs">
+        <Link href="/">Home</Link>
+        <span className="sep">›</span>
+        <span>{county.county}</span>
       </nav>
-      <h1>Businesses in {county.county}</h1>
-      <p className="muted">{county.count} listed · browse by category</p>
+      <span className="eyebrow"><span className="dot" />County guide</span>
+      <h1 style={{ marginTop: 14 }}>Businesses in {county.county}</h1>
+      <p className="muted">{county.count.toLocaleString()} listed · browse by category</p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10, marginTop: 12 }}>
+      <div className="grid-cats" style={{ marginTop: 22 }}>
         {categories.map((c) => (
-          <Link key={c.slug} href={`/${county.slug}/${c.slug}`} className="card" style={{ display: "block" }}>
-            <span style={{ fontWeight: 600 }}>{c.name}</span>{" "}
-            <span className="muted">({c.count})</span>
+          <Link key={c.slug} href={`/${county.slug}/${c.slug}`} className="cat-card">
+            <span className="cat-card__ico"><Icon name={iconForCategory(c.name)} size={20} /></span>
+            <span>
+              <span className="cat-card__name">{c.name}</span>
+              <span className="cat-card__count" style={{ display: "block" }}>{c.count} listing{c.count === 1 ? "" : "s"}</span>
+            </span>
           </Link>
         ))}
       </div>

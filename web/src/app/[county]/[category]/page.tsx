@@ -76,48 +76,53 @@ export default async function CategoryCountyPage({
   };
 
   return (
-    <main className="container">
+    <main className="container rise rise-1">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-      <nav className="muted" style={{ fontSize: 14 }}>
-        <Link href="/">Home</Link> › <Link href={`/${county.slug}`}>{county.county}</Link> › {category.name}
+      <nav className="crumbs">
+        <Link href="/">Home</Link>
+        <span className="sep">›</span>
+        <Link href={`/${county.slug}`}>{county.county}</Link>
+        <span className="sep">›</span>
+        <span>{category.name}</span>
       </nav>
       <h1>
         {category.name} in {county.county}
       </h1>
       <p className="muted">
-        {total} {total === 1 ? "listing" : "listings"}
+        {total.toLocaleString()} {total === 1 ? "listing" : "listings"}
         {totalPages > 1 ? ` · page ${page} of ${totalPages}` : ""}
       </p>
 
-      {items.map((b) => (
-        <div className="card" key={b.id} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <div style={{ width: 72, flex: "none" }}>
-            <BizPhoto photoUrl={b.photoUrl} name={b.name} category={category.name} height={72} rounded={10} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Link href={`/business/${b.slug}`} style={{ fontWeight: 600, fontSize: 18 }}>
-              {b.name}
-            </Link>
-            <div className="muted">
-              {[b.town, b.county].filter(Boolean).join(", ")}
-              {b.avgRating != null ? ` · ★ ${b.avgRating} (${b.reviewCount})` : ""}
+      <div style={{ marginTop: 18 }}>
+        {items.map((b) => (
+          <div className="row" key={b.id}>
+            <div style={{ width: 76, flex: "none" }}>
+              <BizPhoto photoUrl={b.photoUrl} name={b.name} category={category.name} height={76} rounded={10} />
             </div>
-            {!b.hasWebsite && <span className="badge">No website</span>}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Link href={`/business/${b.slug}`} className="row__title">{b.name}</Link>
+              <div className="row__meta">
+                {[b.town, b.county].filter(Boolean).join(", ")}
+                {b.avgRating != null ? <> · <span className="stars">★</span> {b.avgRating} ({b.reviewCount})</> : ""}
+              </div>
+              {!b.hasWebsite && <span className="badge badge-neutral" style={{ marginTop: 8 }}>No website</span>}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16 }}>
+        <div className="pager">
           {page > 1 ? (
-            <Link href={`/${county.slug}/${category.slug}?page=${page - 1}`}>‹ Previous</Link>
+            <Link href={`/${county.slug}/${category.slug}?page=${page - 1}`} className="btn btn-ghost">‹ Previous</Link>
           ) : (
             <span />
           )}
+          <span className="muted">Page {page} of {totalPages}</span>
           {page < totalPages ? (
-            <Link href={`/${county.slug}/${category.slug}?page=${page + 1}`}>Next ›</Link>
+            <Link href={`/${county.slug}/${category.slug}?page=${page + 1}`} className="btn btn-ghost">Next ›</Link>
           ) : (
             <span />
           )}

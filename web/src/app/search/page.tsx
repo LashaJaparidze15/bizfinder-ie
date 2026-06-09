@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { SearchQuery, BusinessListing } from "@bizfinder/shared";
 import { api } from "@/lib/api";
 import { BizPhoto } from "@/components/BizPhoto";
+import { Icon } from "@/components/Icon";
 
 export const dynamic = "force-dynamic"; // search results are always fresh
 
@@ -42,37 +43,44 @@ export default async function SearchPage({
   }
 
   return (
-    <main className="container">
-      <form className="search-form" action="/search" method="get">
-        <input name="q" defaultValue={q} placeholder="e.g. hotel, plumber, cafe" />
-        <input name="county" defaultValue={county} placeholder="County (optional)" />
-        <button type="submit">Search</button>
-      </form>
+    <main className="container rise rise-1">
+      <h1 style={{ fontSize: "1.9rem" }}>Search</h1>
+      <div className="search-shell" style={{ margin: "16px 0 8px", boxShadow: "var(--shadow-md)" }}>
+        <form className="search-form" action="/search" method="get">
+          <span className="field">
+            <span className="ico"><Icon name="search" /></span>
+            <input name="q" defaultValue={q} placeholder="e.g. hotel, plumber, café" />
+          </span>
+          <span className="field" style={{ flexBasis: 180 }}>
+            <span className="ico"><Icon name="pin" /></span>
+            <input name="county" defaultValue={county} placeholder="County (optional)" />
+          </span>
+          <button type="submit">Search</button>
+        </form>
+      </div>
 
-      {!hasQuery && <p className="muted">Enter a search above.</p>}
+      {!hasQuery && <p className="muted">Enter a search above to find Irish businesses.</p>}
       {error && <p className="muted">Couldn’t complete the search ({error}).</p>}
       {hasQuery && !error && (
-        <p className="muted">
-          {results.length} result{results.length === 1 ? "" : "s"}
+        <p className="muted" style={{ marginTop: 18 }}>
+          <strong style={{ color: "var(--ink)" }}>{results.length}</strong> result{results.length === 1 ? "" : "s"}
           {phone ? ` for ${phone}` : q ? ` for “${q}”` : ""}
         </p>
       )}
 
       {results.map((b) => (
-        <div className="card" key={b.id} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <div style={{ width: 72, flex: "none" }}>
-            <BizPhoto photoUrl={b.photoUrl} name={b.name} category={null} height={72} rounded={10} />
+        <div className="row" key={b.id}>
+          <div style={{ width: 76, flex: "none" }}>
+            <BizPhoto photoUrl={b.photoUrl} name={b.name} category={null} height={76} rounded={10} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <Link href={`/business/${b.slug}`} style={{ fontWeight: 600, fontSize: 18 }}>
-              {b.name}
-            </Link>
-            <div className="muted">
+            <Link href={`/business/${b.slug}`} className="row__title">{b.name}</Link>
+            <div className="row__meta">
               {[b.location?.town, b.location?.county].filter(Boolean).join(", ")}
               {b.distanceMeters != null ? ` · ${Math.round(b.distanceMeters)} m away` : ""}
-              {b.avgRating != null ? ` · ★ ${b.avgRating} (${b.reviewCount})` : ""}
+              {b.avgRating != null ? <> · <span className="stars">★</span> {b.avgRating} ({b.reviewCount})</> : ""}
             </div>
-            {!b.hasWebsite && <span className="badge">No website</span>}
+            {!b.hasWebsite && <span className="badge badge-neutral" style={{ marginTop: 8 }}>No website</span>}
           </div>
         </div>
       ))}

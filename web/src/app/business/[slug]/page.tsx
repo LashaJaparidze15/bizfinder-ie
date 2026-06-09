@@ -8,6 +8,7 @@ import { CallLink } from "@/components/CallLink";
 import { ReviewForm } from "@/components/ReviewForm";
 import { BizPhoto } from "@/components/BizPhoto";
 import { ClaimForm } from "@/components/ClaimForm";
+import { Icon } from "@/components/Icon";
 
 async function getBusiness(slug: string): Promise<BusinessListing | null> {
   try {
@@ -79,41 +80,61 @@ export default async function BusinessPage({ params }: { params: { slug: string 
   };
 
   return (
-    <main className="container">
+    <main className="container-narrow rise rise-1">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Beacon businessId={b.id} />
 
-      <div style={{ margin: "4px 0 12px" }}>
-        <BizPhoto photoUrl={b.photoUrl} name={b.name} category={null} height={200} />
-      </div>
-      <h1 style={{ marginBottom: 4 }}>{b.name}</h1>
-      {where && <p className="muted" style={{ marginTop: 0, marginBottom: 4 }}>{where}</p>}
-      {b.avgRating != null ? (
-        <p style={{ marginTop: 0 }}>
-          <span style={{ color: "#e8a200" }}>
-            {"★".repeat(Math.round(b.avgRating))}
-            {"☆".repeat(5 - Math.round(b.avgRating))}
-          </span>{" "}
-          <strong>{b.avgRating}</strong>{" "}
-          <span className="muted">· {b.reviewCount} review{b.reviewCount === 1 ? "" : "s"}</span>
-        </p>
-      ) : (
-        <p className="muted" style={{ marginTop: 0 }}>No reviews yet</p>
-      )}
+      <nav className="crumbs">
+        <Link href="/">Home</Link>
+        {b.location?.county && (
+          <>
+            <span className="sep">›</span>
+            <Link href={`/${b.location.county.toLowerCase()}`}>{b.location.county}</Link>
+          </>
+        )}
+        <span className="sep">›</span>
+        <span>{b.name}</span>
+      </nav>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "12px 0" }}>
+      {/* Hero banner with overlaid title */}
+      <div className="biz-hero">
+        <BizPhoto photoUrl={b.photoUrl} name={b.name} category={null} height={240} rounded={20} />
+        <div style={{ position: "absolute", left: 22, right: 22, bottom: 18, zIndex: 1 }}>
+          <h1 style={{ color: "#fff", marginBottom: 4, textShadow: "0 2px 14px rgba(0,0,0,0.4)" }}>{b.name}</h1>
+          {where && <p style={{ color: "rgba(255,255,255,0.92)", margin: 0, textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{where}</p>}
+        </div>
+      </div>
+
+      {/* Rating line */}
+      <div style={{ margin: "16px 0 6px" }}>
+        {b.avgRating != null ? (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <span className="stars" style={{ fontSize: "1.1rem" }}>
+              {"★".repeat(Math.round(b.avgRating))}
+              <span style={{ color: "var(--line)" }}>{"★".repeat(5 - Math.round(b.avgRating))}</span>
+            </span>
+            <strong>{b.avgRating}</strong>
+            <span className="muted">· {b.reviewCount} review{b.reviewCount === 1 ? "" : "s"}</span>
+          </span>
+        ) : (
+          <span className="muted">No reviews yet</span>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "14px 0 8px" }}>
         {b.phones.map((p) => (
           <CallLink key={p.e164} businessId={b.id} e164={p.e164} />
         ))}
         {b.websiteUrl && (
-          <a href={b.websiteUrl} target="_blank" rel="noopener" className="badge" style={{ padding: "6px 12px" }}>
-            🌐 Website
+          <a href={b.websiteUrl} target="_blank" rel="noopener" className="btn btn-ghost">
+            <Icon name="globe" size={16} /> Visit website
           </a>
         )}
       </div>
 
       {!b.hasWebsite && (
-        <div className="card" style={{ background: "#fffbe6", borderColor: "#f5e08c" }}>
+        <div className="notice notice-warn">
           <strong>No website yet?</strong>{" "}
           <span className="muted">
             Businesses with a website get noticeably more engagement. We can build you a basic one.
@@ -122,30 +143,32 @@ export default async function BusinessPage({ params }: { params: { slug: string 
       )}
 
       {/* App-install deep link (CTA into the mobile app, the main usage surface) */}
-      <div className="card">
-        <a href={`bizfinderie://business/${b.slug}`}>📱 Open in the bizfinder app</a>
-        <div className="muted">Get directions, save, and call faster in the app.</div>
+      <div className="notice notice-app">
+        <a href={`bizfinderie://business/${b.slug}`} style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <Icon name="smartphone" size={16} /> Open in the bizfinder app
+        </a>
+        <div className="muted" style={{ marginTop: 2 }}>Get directions, save, and call faster in the app.</div>
       </div>
 
-      <div className="card" style={{ background: "#f3faf6", borderColor: "#bfe6d2" }}>
+      <div className="notice notice-brand">
         <strong>Is this your business?</strong>{" "}
         <span className="muted">Claim it to manage the listing and see its analytics.</span>
         <ClaimForm businessId={b.id} />
       </div>
 
       {similar.length > 0 && (
-        <section style={{ marginTop: 20 }}>
-          <h2 style={{ fontSize: 18 }}>Similar businesses</h2>
+        <section className="section">
+          <div className="section__head"><h2>Similar businesses</h2></div>
           {similar.map((s) => (
-            <div className="card" key={s.id} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div className="row" key={s.id}>
               <div style={{ width: 56, flex: "none" }}>
-                <BizPhoto photoUrl={s.photoUrl} name={s.name} category={s.category} height={56} rounded={8} />
+                <BizPhoto photoUrl={s.photoUrl} name={s.name} category={s.category} height={56} rounded={10} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <Link href={`/business/${s.slug}`} style={{ fontWeight: 600 }}>{s.name}</Link>
-                <div className="muted">
+                <Link href={`/business/${s.slug}`} className="row__title" style={{ fontSize: "1rem" }}>{s.name}</Link>
+                <div className="row__meta">
                   {[s.town, s.county].filter(Boolean).join(", ")}
-                  {s.avgRating != null ? ` · ★ ${s.avgRating} (${s.reviewCount})` : ""}
+                  {s.avgRating != null ? <> · <span className="stars">★</span> {s.avgRating} ({s.reviewCount})</> : ""}
                 </div>
               </div>
             </div>
@@ -153,16 +176,16 @@ export default async function BusinessPage({ params }: { params: { slug: string 
         </section>
       )}
 
-      <section style={{ marginTop: 20 }}>
-        <h2 style={{ fontSize: 18 }}>Reviews</h2>
+      <section className="section">
+        <div className="section__head"><h2>Reviews</h2></div>
         {b.reviews && b.reviews.length > 0 ? (
           b.reviews.map((rv) => (
-            <div className="card" key={rv.id}>
+            <div className="card" key={rv.id} style={{ marginBottom: 12 }}>
               <div>
-                <span style={{ color: "#e8a200" }}>{"★".repeat(rv.rating)}</span>{" "}
+                <span className="stars">{"★".repeat(rv.rating)}</span>{" "}
                 <strong>{rv.authorName || "Anonymous"}</strong>
               </div>
-              {rv.body && <div className="muted" style={{ marginTop: 4 }}>{rv.body}</div>}
+              {rv.body && <div className="muted" style={{ marginTop: 6 }}>{rv.body}</div>}
             </div>
           ))
         ) : (
