@@ -5,6 +5,17 @@ type, location, or reverse phone lookup, on the web and a mobile app. The revenu
 **analytics sold back to businesses** (search impressions, click-throughs, calls generated, time on
 listing), with a website-build upsell for businesses that lack one.
 
+**🔗 Live: [bizfinder-ie-web.vercel.app](https://bizfinder-ie-web.vercel.app)** &nbsp;·&nbsp; 46,000+ businesses across all 26 ROI counties
+
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Fastify](https://img.shields.io/badge/Fastify-000000?style=flat&logo=fastify&logoColor=white)](https://fastify.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Expo](https://img.shields.io/badge/Expo-1B1F23?style=flat&logo=expo&logoColor=white)](https://expo.dev/)
+[![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=flat&logo=stripe&logoColor=white)](https://stripe.com/)
+
+![bizfinder.ie home page](docs/screenshot-home.png)
+
 > Working name `bizfinder-ie` — rename when the brand is chosen. Two-developer project.
 
 ---
