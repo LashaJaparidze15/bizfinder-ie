@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Inter, Sora } from "next/font/google";
+import { SiteNav } from "@/components/SiteNav";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
@@ -40,15 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span className="brand__mark"><LogoMark /></span>
               bizfinder<span className="brand__tld">.ie</span>
             </Link>
-            <nav className="nav">
-              <Link href="/search" className="nav-hide-sm">Search</Link>
-              <Link href="/#counties" className="nav-hide-sm">Browse</Link>
-              <Link href="/search" className="btn btn-ghost" style={{ padding: "8px 16px" }}>
-                Find a business
-              </Link>
-            </nav>
           </div>
         </header>
+
+        <SiteNav />
 
         {children}
 
