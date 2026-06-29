@@ -10,6 +10,9 @@ import { claimRoutes } from "./routes/claims.js";
 import { analyticsRoutes } from "./routes/analytics.js";
 import { billingRoutes } from "./routes/billing.js";
 import { directoryRoutes } from "./routes/directory.js";
+import { authRoutes } from "./routes/auth.js";
+import { registerRoutes } from "./routes/register.js";
+import { manageRoutes } from "./routes/manage.js";
 
 async function main() {
   const app = Fastify({ logger: true, trustProxy: true });
@@ -37,6 +40,9 @@ async function main() {
   await app.register(analyticsRoutes);
   await app.register(billingRoutes);
   await app.register(directoryRoutes);
+  await app.register(authRoutes);
+  await app.register(registerRoutes);
+  await app.register(manageRoutes);
 
   // Cloud hosts inject PORT; fall back to API_PORT / 4000 for local dev.
   const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);

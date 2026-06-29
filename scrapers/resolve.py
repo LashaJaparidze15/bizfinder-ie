@@ -137,20 +137,31 @@ def main() -> None:
     if not url:
         sys.exit("DATABASE_URL not set")
 
+    # Process at most BATCH_LIMIT records per invocation (0 = all). Keeping each
+    # run short-lived with a fresh connection sidesteps the Supabase pooler's
+    # ~5-min connection drop; the wrapper re-runs until nothing is left (idempotent).
+    batch_limit = int(os.getenv("BATCH_LIMIT", "0"))
+
     created = matched = 0
-    with psycopg.connect(url) as conn:
+    with psycopg.connect(
+        url, keepalives=1, keepalives_idle=30, keepalives_interval=10, keepalives_count=5
+    ) as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """select distinct on (source, source_record_id)
+            sql = """select distinct on (source, source_record_id)
                           source, source_record_id, raw_payload
                      from business_sources
                     where business_id is null
                     order by source, source_record_id, scraped_at desc"""
-            )
+            if batch_limit > 0:
+                sql += f"\n                    limit {batch_limit}"
+            cur.execute(sql)
             rows = cur.fetchall()
             print(f"{len(rows)} unmatched source records to resolve...", file=sys.stderr)
 
-            for source, source_record_id, payload in rows:
+            for i, (source, source_record_id, payload) in enumerate(rows, 1):
+                if i % 2000 == 0:
+                    conn.commit()  # make progress durable + resumable on disconnect
+                    print(f"  ...{i}/{len(rows)} processed (created={created} matched={matched})", file=sys.stderr, flush=True)
                 p = payload if isinstance(payload, dict) else json.loads(payload)
                 if not p.get("name"):
                     continue

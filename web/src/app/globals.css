@@ -1,3 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- shadcn/21st.dev tokens, mapped to the GREEN (emerald) theme ---- */
+@layer base {
+  :root {
+    /* Namespaced --ui-* so they never collide with the design-system tokens
+       below (which use --accent, --muted, etc. as hex colors). */
+    --ui-background: 210 20% 98%;
+    --ui-foreground: 222 30% 11%;
+    --ui-card: 0 0% 100%;
+    --ui-card-foreground: 222 30% 11%;
+    --ui-primary: 160 84% 30%;          /* emerald-700 */
+    --ui-primary-foreground: 0 0% 100%;
+    --ui-secondary: 152 33% 93%;        /* soft green */
+    --ui-secondary-foreground: 161 64% 16%;
+    --ui-muted: 214 24% 95%;
+    --ui-muted-foreground: 215 16% 47%;
+    --ui-accent: 173 78% 34%;           /* teal */
+    --ui-accent-foreground: 0 0% 100%;
+    --ui-border: 214 20% 91%;
+    --ui-input: 214 20% 91%;
+    --ui-ring: 160 84% 39%;
+    --radius: 0.9rem;
+  }
+  /* preflight is off (to protect the existing pages); re-add only the border
+     defaults so Tailwind `border` utilities render as 1px solid brand-border. */
+  *, ::before, ::after {
+    border-width: 0;
+    border-style: solid;
+    border-color: hsl(var(--ui-border));
+  }
+}
+
 /* ============================================================
    bizfinder.ie — design system
    Modern, classy Irish directory. Emerald brand, soft depth,
@@ -93,8 +128,9 @@ a { color: var(--brand-700); text-decoration: none; transition: color 0.15s var(
 a:hover { color: var(--brand-800); }
 
 /* ---------- Layout ---------- */
-.container { max-width: var(--maxw); margin: 0 auto; padding: 28px 20px 64px; }
-.container-narrow { max-width: 780px; margin: 0 auto; padding: 28px 20px 64px; }
+/* top padding clears the absolute (transparent) header on content pages */
+.container { max-width: var(--maxw); margin: 0 auto; padding: 92px 20px 64px; }
+.container-narrow { max-width: 780px; margin: 0 auto; padding: 92px 20px 64px; }
 
 .muted { color: var(--muted); font-size: 0.95rem; }
 .eyebrow {
@@ -109,16 +145,15 @@ a:hover { color: var(--brand-800); }
   box-shadow: 0 0 0 4px rgba(16,185,129,0.18); }
 
 /* ---------- Header ---------- */
+/* Transparent floating bar — the tubelight pill is the persistent nav, so the
+   header just holds the logo + CTA and blends over the hero (no white strip). */
 .site-header {
-  position: sticky; top: 0; z-index: 50;
-  backdrop-filter: saturate(180%) blur(14px);
-  -webkit-backdrop-filter: saturate(180%) blur(14px);
-  background: rgba(255, 255, 255, 0.72);
-  border-bottom: 1px solid var(--line);
+  position: absolute; top: 0; left: 0; right: 0; z-index: 40;
+  background: transparent;
 }
 .site-header__inner {
   max-width: var(--maxw); margin: 0 auto;
-  padding: 14px 20px;
+  padding: 18px 20px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .brand {
@@ -365,5 +400,5 @@ a.card:hover, .card-hover:hover {
   .nav a.nav-hide-sm { display: none; }
   .search-form { flex-direction: column; }
   .search-form button { width: 100%; }
-  .container, .container-narrow { padding: 20px 16px 48px; }
+  .container, .container-narrow { padding: 80px 16px 48px; }
 }

@@ -162,6 +162,68 @@ export const takedownInputSchema = z
   });
 export type TakedownInput = z.infer<typeof takedownInputSchema>;
 
+// --- Business owner accounts: passwordless auth, registration, claim ---
+export const requestCodeSchema = z.object({
+  email: z.string().email(),
+  purpose: z.enum(["login", "register"]).default("login"),
+});
+export type RequestCodeInput = z.infer<typeof requestCodeSchema>;
+
+export const verifyCodeSchema = z.object({
+  email: z.string().email(),
+  code: z.string().regex(/^\d{6}$/),
+  purpose: z.enum(["login", "register"]).default("login"),
+});
+export type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
+
+export const registerBusinessSchema = z.object({
+  name: z.string().trim().min(2).max(160),
+  category: z.string().trim().min(1).max(80),
+  description: z.string().trim().max(2000).optional(),
+  email: z.string().email(),
+  phone: z.string().trim().min(5).max(30).optional(),
+  website: z.string().trim().max(300).optional(),
+  county: z.string().trim().min(2).max(80),
+  town: z.string().trim().max(80).optional(),
+  addressLine: z.string().trim().max(200).optional(),
+  eircode: z.string().trim().max(12).optional(),
+  lat: z.coerce.number().gte(-90).lte(90).optional(),
+  lng: z.coerce.number().gte(-180).lte(180).optional(),
+});
+export type RegisterBusinessInput = z.infer<typeof registerBusinessSchema>;
+
+export const claimRequestSchema = z.object({ businessId: z.number().int().positive() });
+export type ClaimRequestInput = z.infer<typeof claimRequestSchema>;
+export const claimVerifySchema = z.object({
+  businessId: z.number().int().positive(),
+  code: z.string().regex(/^\d{6}$/),
+});
+export type ClaimVerifyInput = z.infer<typeof claimVerifySchema>;
+
+// Owner editing their claimed listing.
+export const editBusinessSchema = z
+  .object({
+    name: z.string().trim().min(2).max(160).optional(),
+    description: z.string().trim().max(2000).optional(),
+    email: z.string().email().optional(),
+    phone: z.string().trim().max(30).optional(),
+    website: z.string().trim().max(300).optional(),
+    photoUrl: z.string().trim().url().max(500).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: "nothing to update" });
+export type EditBusinessInput = z.infer<typeof editBusinessSchema>;
+
+export interface ManagedBusiness {
+  id: number;
+  slug: string;
+  name: string;
+  description: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  photoUrl: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Typed API client (used by web + app). Inject fetch + baseUrl.
 // ---------------------------------------------------------------------------
@@ -231,6 +293,85 @@ export function createApiClient({ baseUrl, fetch: f = fetch }: ApiClientOptions)
       });
       if (!res.ok) throw new Error(`createClaim failed: ${res.status}`);
       return (await res.json()) as { id: string; status: string };
+    },
+
+    // --- owner auth / registration / claim ---
+    async requestCode(input: RequestCodeInput): Promise<{ ok: true; devCode?: string }> {
+      const res = await f(url(`/api/auth/request-code`), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string } & Record<string, unknown>;
+      if (!res.ok) throw new Error(data.error ?? `request-code failed: ${res.status}`);
+      return data as { ok: true; devCode?: string };
+    },
+
+    async verifyCode(input: VerifyCodeInput): Promise<{ token: string; accountId: number }> {
+      const res = await f(url(`/api/auth/verify`), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string } & Record<string, unknown>;
+      if (!res.ok) throw new Error(data.error ?? `verify failed: ${res.status}`);
+      return data as unknown as { token: string; accountId: number };
+    },
+
+    async registerBusiness(input: RegisterBusinessInput, token: string): Promise<{ id: number; slug: string }> {
+      const res = await f(url(`/api/businesses/register`), {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+        body: JSON.stringify(input),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string } & Record<string, unknown>;
+      if (!res.ok) throw new Error(data.error ?? `register failed: ${res.status}`);
+      return data as unknown as { id: number; slug: string };
+    },
+
+    async claimRequest(businessId: number): Promise<{ sentTo: string; devCode?: string }> {
+      const res = await f(url(`/api/claims/request`), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ businessId }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string } & Record<string, unknown>;
+      if (!res.ok) throw new Error(data.error ?? `claim request failed: ${res.status}`);
+      return data as unknown as { sentTo: string; devCode?: string };
+    },
+
+    async claimVerify(businessId: number, code: string): Promise<{ token: string; slug: string }> {
+      const res = await f(url(`/api/claims/verify`), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ businessId, code }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string } & Record<string, unknown>;
+      if (!res.ok) throw new Error(data.error ?? `claim verify failed: ${res.status}`);
+      return data as unknown as { token: string; slug: string };
+    },
+
+    // Owner-only: load editable fields (403 if not yours).
+    async getManagedBusiness(id: number, token: string): Promise<ManagedBusiness> {
+      const res = await f(url(`/api/businesses/${id}/manage`), {
+        headers: { authorization: `Bearer ${token}` },
+        cache: "no-store",
+      } as RequestInit);
+      const data = (await res.json().catch(() => ({}))) as { error?: string } & Record<string, unknown>;
+      if (!res.ok) throw new Error(data.error ?? `manage load failed: ${res.status}`);
+      return data as unknown as ManagedBusiness;
+    },
+
+    // Owner-only: update fields.
+    async updateBusiness(id: number, patch: EditBusinessInput, token: string): Promise<{ ok: true }> {
+      const res = await f(url(`/api/businesses/${id}`), {
+        method: "PATCH",
+        headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+        body: JSON.stringify(patch),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string } & Record<string, unknown>;
+      if (!res.ok) throw new Error(data.error ?? `update failed: ${res.status}`);
+      return data as unknown as { ok: true };
     },
 
     async createReview(slug: string, input: ReviewInput): Promise<Review> {

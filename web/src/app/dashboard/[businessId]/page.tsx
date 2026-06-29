@@ -1,6 +1,7 @@
 import type { AnalyticsResponse } from "@bizfinder/shared";
 import { api } from "@/lib/api";
 import { SubscribeButton } from "@/components/SubscribeButton";
+import { ManageListing } from "@/components/ManageListing";
 
 export const dynamic = "force-dynamic";
 
@@ -29,77 +30,68 @@ function SurfaceRow({ name, counts, max }: { name: string; counts: { impressions
   );
 }
 
-export default async function DashboardPage({ params }: { params: { businessId: string } }) {
-  const businessId = Number(params.businessId);
-
-  // Paywall: if billing is live and this owner hasn't subscribed, show the CTA.
-  const billing = await api
-    .getBillingStatus(businessId)
-    .catch(() => ({ active: false, billingEnabled: false }));
-  if (billing.billingEnabled && !billing.active) {
-    return (
-      <main className="container">
-        <h1>Listing analytics</h1>
-        <div className="card" style={{ background: "#fffbe6", borderColor: "#f5e08c" }}>
-          <strong>Unlock your analytics</strong>
-          <p className="muted">
-            See impressions, click-throughs, calls generated, and the web-vs-app split for your
-            listing. Subscribe to get full access.
-          </p>
-          <SubscribeButton businessId={businessId} />
-        </div>
-      </main>
-    );
-  }
-
-  let data: AnalyticsResponse | null = null;
-  let error: string | null = null;
-  try {
-    data = await api.getAnalytics(businessId, 30);
-  } catch (e) {
-    error = e instanceof Error ? e.message : "failed to load";
-  }
-
-  if (error || !data) {
-    return (
-      <main className="container">
-        <h1>Listing analytics</h1>
-        <p className="muted">Couldn’t load analytics ({error}).</p>
-      </main>
-    );
-  }
-
+function AnalyticsSection({ data }: { data: AnalyticsResponse }) {
   const appImpressions = (data.bySurface.ios?.impressions ?? 0) + (data.bySurface.android?.impressions ?? 0);
-  const maxSurface = Math.max(
-    data.bySurface.web?.impressions ?? 0,
-    appImpressions,
-    1,
-  );
-
+  const maxSurface = Math.max(data.bySurface.web?.impressions ?? 0, appImpressions, 1);
   return (
-    <main className="container">
-      <h1>Listing analytics</h1>
+    <>
       <p className="muted">Last {data.days} days · business #{data.businessId}</p>
-
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "12px 0" }}>
         <Stat label="Impressions" value={data.totals.impressions} />
         <Stat label="Clicks" value={data.totals.clicks} />
         <Stat label="Calls generated" value={data.totals.calls} hint="the metric that matters" />
       </div>
-
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Where your engagement comes from</h3>
         <SurfaceRow name="web" counts={{ impressions: data.bySurface.web?.impressions ?? 0, calls: data.bySurface.web?.calls ?? 0 }} max={maxSurface} />
         <SurfaceRow name="app" counts={{ impressions: appImpressions, calls: (data.bySurface.ios?.calls ?? 0) + (data.bySurface.android?.calls ?? 0) }} max={maxSurface} />
       </div>
+    </>
+  );
+}
 
-      <div className="card" style={{ background: "#f3faf6", borderColor: "#bfe6d2" }}>
-        <strong>This is the paid view.</strong>{" "}
-        <span className="muted">
-          Subscription gating is wired: once Stripe keys are set, only a claimed owner with an
-          active plan reaches this data — others get the subscribe screen.
-        </span>
-      </div>
+export default async function DashboardPage({ params }: { params: { businessId: string } }) {
+  const businessId = Number(params.businessId);
+
+  const billing = await api
+    .getBillingStatus(businessId)
+    .catch(() => ({ active: false, billingEnabled: false }));
+  const locked = billing.billingEnabled && !billing.active;
+
+  let data: AnalyticsResponse | null = null;
+  let error: string | null = null;
+  if (!locked) {
+    try {
+      data = await api.getAnalytics(businessId, 30);
+    } catch (e) {
+      error = e instanceof Error ? e.message : "failed to load";
+    }
+  }
+
+  return (
+    <main className="container">
+      <h1>Your listing</h1>
+
+      {/* Free for the owner: edit details (self-gates by owner session) */}
+      <ManageListing businessId={businessId} />
+
+      <section className="section">
+        <div className="section__head"><h2>Listing analytics</h2></div>
+        {locked ? (
+          <div className="notice notice-warn">
+            <strong>Unlock your analytics</strong>
+            <p className="muted">
+              See impressions, click-throughs, calls generated, and the web-vs-app split for your
+              listing. Subscribe to get full access.
+            </p>
+            <SubscribeButton businessId={businessId} />
+          </div>
+        ) : error || !data ? (
+          <p className="muted">Couldn’t load analytics ({error}).</p>
+        ) : (
+          <AnalyticsSection data={data} />
+        )}
+      </section>
     </main>
   );
 }

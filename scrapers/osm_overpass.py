@@ -31,17 +31,29 @@ OVERPASS_URL = os.getenv("OVERPASS_URL", "https://overpass-api.de/api/interprete
 USER_AGENT = os.getenv("SCRAPER_USER_AGENT", "bizfinder-ie/0.1")
 
 # Tag groups that indicate a real business POI.
+_AMENITY = (
+    "restaurant|cafe|pub|bar|fast_food|food_court|ice_cream|pharmacy|bank|"
+    "bureau_de_change|fuel|dentist|doctors|clinic|veterinary|car_repair|car_wash|"
+    "car_rental|driving_school|cinema|theatre|nightclub|marketplace|internet_cafe|"
+    "childcare|kindergarten|fitness_centre|funeral_hall"
+)
+_LEISURE = "fitness_centre|sports_centre|bowling_alley|dance|escape_game|golf_course|horse_riding"
+_TOURISM = "hotel|guest_house|hostel|motel|apartment|chalet|caravan_site"
 POI_FILTERS = [
     'node["name"]["shop"](area.a);',
     'way["name"]["shop"](area.a);',
-    'node["name"]["amenity"~"restaurant|cafe|pub|bar|fast_food|pharmacy|bank|fuel|dentist|doctors|veterinary|car_repair"](area.a);',
-    'way["name"]["amenity"~"restaurant|cafe|pub|bar|fast_food|pharmacy|bank|fuel|dentist|doctors|veterinary|car_repair"](area.a);',
+    f'node["name"]["amenity"~"{_AMENITY}"](area.a);',
+    f'way["name"]["amenity"~"{_AMENITY}"](area.a);',
     'node["name"]["office"](area.a);',
     'way["name"]["office"](area.a);',
     'node["name"]["craft"](area.a);',
     'way["name"]["craft"](area.a);',
-    'node["name"]["tourism"~"hotel|guest_house|hostel"](area.a);',
-    'way["name"]["tourism"~"hotel|guest_house|hostel"](area.a);',
+    'node["name"]["healthcare"](area.a);',
+    'way["name"]["healthcare"](area.a);',
+    f'node["name"]["leisure"~"{_LEISURE}"](area.a);',
+    f'way["name"]["leisure"~"{_LEISURE}"](area.a);',
+    f'node["name"]["tourism"~"{_TOURISM}"](area.a);',
+    f'way["name"]["tourism"~"{_TOURISM}"](area.a);',
 ]
 
 
@@ -51,7 +63,7 @@ def build_query(county: str, limit: int) -> str:
         f'area["boundary"="administrative"]["name"~"^(County {county}|{county})$"]->.a;'
     )
     body = "\n  ".join(POI_FILTERS)
-    return f"""[out:json][timeout:90];
+    return f"""[out:json][timeout:180];
 {area}
 (
   {body}
@@ -82,6 +94,8 @@ def to_source_record(el: dict) -> dict:
         or tags.get("amenity")
         or tags.get("office")
         or tags.get("craft")
+        or tags.get("healthcare")
+        or tags.get("leisure")
         or tags.get("tourism")
     )
     phone_raw = tags.get("phone") or tags.get("contact:phone")
@@ -140,18 +154,20 @@ def write_to_db(records: list[dict]) -> int:
     if not url:
         sys.exit("DATABASE_URL not set — cannot --write.")
 
-    inserted = 0
+    if not records:
+        return 0
+    # Batch insert: one round-trip (pipelined) instead of thousands of per-row
+    # round-trips to the remote DB — the difference is seconds vs ~30 min/county.
+    params = [(r["source_record_id"], json.dumps(r)) for r in records]
     with psycopg.connect(url) as conn:
         with conn.cursor() as cur:
-            for r in records:
-                cur.execute(
-                    """insert into business_sources (source, source_record_id, raw_payload)
-                       values ('osm', %s, %s)""",
-                    (r["source_record_id"], json.dumps(r)),
-                )
-                inserted += 1
+            cur.executemany(
+                """insert into business_sources (source, source_record_id, raw_payload)
+                   values ('osm', %s, %s)""",
+                params,
+            )
         conn.commit()
-    return inserted
+    return len(params)
 
 
 def main() -> None:
