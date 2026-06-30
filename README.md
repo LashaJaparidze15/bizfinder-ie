@@ -16,7 +16,7 @@ listing), with a website-build upsell for businesses that lack one.
 
 ![bizfinder.ie home page](docs/screenshot-home.png)
 
-> Working name `bizfinder-ie` — rename when the brand is chosen. Two-developer project.
+> Working name `bizfinder-ie` — rename when the brand is chosen.
 
 ---
 
